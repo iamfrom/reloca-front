@@ -12,6 +12,8 @@ import pluralize from 'pluralize';
 import FreeDownloadButton from './free-download-button';
 import FavoriteButton from '@/components/favorite/favorite-button';
 import { useTranslation } from 'next-i18next';
+import { HttpClient } from '@/data/client/http-client';
+import { useState } from 'react';
 
 interface Props {
   product: Product;
@@ -32,6 +34,16 @@ export default function ProductDetailsPaper({ product, className }: Props) {
   } = product;
   const isFreeItem = isFree(sale_price ?? price);
   const { t } = useTranslation('common');
+  const [totalDownloads, setTotalDownloads] = useState(total_downloads)
+
+  const handlePreviewClick = () => {
+    HttpClient.post('product/viewed', {
+      product_id: id
+    }).then(() => {
+      setTotalDownloads(v => v + 1)
+    })
+  }
+
   return (
     <div
       className={cn(
@@ -78,7 +90,7 @@ export default function ProductDetailsPaper({ product, className }: Props) {
             )}
             <div className="flex items-center tracking-[.1px] text-dark dark:text-light">
               <DownloadIcon className="h-[18px] w-[18px] text-dark-900 ltr:mr-2.5 rtl:ml-2.5 dark:text-light-900" />
-              {pluralize(t('text-download'), total_downloads, true)}
+              {pluralize(t('text-download'), totalDownloads, true)}
             </div>
           </div>
         </div>
@@ -88,6 +100,7 @@ export default function ProductDetailsPaper({ product, className }: Props) {
         {Boolean(preview_url) && (
           <a
             href={preview_url}
+            onClick={handlePreviewClick}
             rel="noreferrer"
             target="_blank"
             className="transition-fill-colors flex items-center justify-center gap-2 font-semibold duration-200 pointer-events-auto cursor-pointer opacity-100 min-h-[46px] sm:h-12 rounded py-3 px-4 md:px-5 bg-brand text-white hover:bg-brand-dark focus:bg-brand-dark relative pointer-events-auto cursor-pointer mt-2.5 w-full flex-1 xs:mt-0"
